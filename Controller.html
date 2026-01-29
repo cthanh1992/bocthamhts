@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { background: #000; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; font-family: sans-serif; }
+    .btn {
+      width: 250px; height: 250px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #ff0000 0%, #990000 100%);
+      border: 5px solid #fff;
+      color: white; font-size: 30px; font-weight: bold;
+      box-shadow: 0 0 50px rgba(255,0,0,0.5);
+      cursor: pointer;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+    }
+    .btn:active { transform: scale(0.95); box-shadow: 0 0 20px rgba(255,0,0,0.8); }
+    .status { color: #888; margin-top: 20px; position: fixed; bottom: 20px;}
+  </style>
+</head>
+<body>
+
+<button class="btn" onclick="trigger()">
+  QUAY
+  <span style="font-size:14px; margin-top:5px">(Bấm để bắt đầu)</span>
+</button>
+
+<div class="status" id="msg">Sẵn sàng</div>
+
+<script>
+  function trigger() {
+    document.getElementById('msg').innerText = "Đang gửi lệnh...";
+    var btn = document.querySelector('.btn');
+    btn.style.background = "#555"; // Làm tối nút
+    btn.disabled = true;
+
+    google.script.run.withSuccessHandler(function(res){
+      document.getElementById('msg').innerText = "Đã kích hoạt màn hình lớn!";
+      setTimeout(() => {
+         // Reset lại nút sau 5 giây để quay lượt tiếp theo
+         btn.style.background = "radial-gradient(circle, #ff0000 0%, #990000 100%)";
+         btn.disabled = false;
+         document.getElementById('msg').innerText = "Sẵn sàng lượt tiếp";
+      }, 5000);
+    }).triggerSpin();
+  }
+</script>
+</body>
+</html>
