@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Danh Sách Trúng Thưởng</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --gold: #FFD700;
+      --gold-dark: #B8860B;
+      --bg-dark: #0a0a14;
+      --card-bg: rgba(255, 255, 255, 0.05);
+      --text-gray: #aaa;
+    }
+
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background-color: var(--bg-dark);
+      background-image: radial-gradient(circle at top center, #1a1a2e 0%, #000 100%);
+      color: #eee;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      overflow-y: scroll; /* Luôn hiện thanh cuộn để tránh nhảy layout */
+    }
+
+    /* HEADER */
+    .header-fixed {
+        position: sticky; top: 0; z-index: 1000;
+        background: rgba(10, 10, 20, 0.95);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid rgba(255,215,0,0.3);
+        box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+        padding: 15px 30px;
+        display: flex; justify-content: space-between; align-items: center;
+    }
+
+    h2 {
+      margin: 0; color: var(--gold); font-size: 28px; text-transform: uppercase; letter-spacing: 2px;
+      text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+    }
+    
+    .refresh-btn {
+      background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+      border: none; padding: 10px 20px; font-weight: 800; color: #000;
+      cursor: pointer; border-radius: 6px; text-transform: uppercase; font-size: 14px;
+      transition: 0.2s;
+    }
+    .refresh-btn:hover { transform: scale(1.05); box-shadow: 0 0 15px var(--gold); }
+
+    /* TABS CONTAINER */
+    .tabs-container {
+        display: flex; gap: 10px; overflow-x: auto; padding: 15px 30px;
+        background: rgba(0,0,0,0.3); border-bottom: 1px solid rgba(255,255,255,0.05);
+        white-space: nowrap; scrollbar-width: thin;
+    }
+    
+    .tab-btn {
+        background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+        color: #888; padding: 10px 20px; border-radius: 30px; cursor: pointer;
+        font-weight: 700; font-size: 14px; transition: 0.3s;
+    }
+    
+    .tab-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+    
+    .tab-btn.active {
+        background: var(--gold); color: #000; border-color: var(--gold);
+        box-shadow: 0 0 15px rgba(255,215,0,0.4);
+    }
+    
+    .tab-count {
+        background: rgba(0,0,0,0.4); color: #fff; padding: 2px 6px; 
+        border-radius: 10px; font-size: 10px; margin-left: 5px; vertical-align: middle;
+    }
+    .tab-btn.active .tab-count { background: #000; color: var(--gold); }
+
+    /* CONTENT GRID */
+    .content-area { padding: 30px; max-width: 1400px; margin: 0 auto; }
+    
+    .grid-container {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;
+    }
+
+    /* CARD STYLING - UPDATED FOR EMPLOYEE IMG */
+    .card {
+      background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
+      border: 1px solid rgba(255,215,0,0.15);
+      border-radius: 12px;
+      display: flex; align-items: center; /* Layout ngang */
+      padding: 15px;
+      transition: 0.3s;
+      position: relative; overflow: hidden;
+    }
+
+    .card:hover {
+      transform: translateY(-5px); border-color: var(--gold);
+      background: rgba(255,215,0,0.05);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    /* Employee Image: Circle Left */
+    .emp-img-wrapper {
+        width: 80px; height: 80px; border-radius: 50%;
+        border: 2px solid var(--gold);
+        overflow: hidden; flex-shrink: 0; margin-right: 15px;
+        background: #000; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    }
+    .emp-img { width: 100%; height: 100%; object-fit: cover; }
+
+    /* Info Right */
+    .card-info { flex-grow: 1; min-width: 0; }
+    
+    .winner-name { font-size: 18px; font-weight: 900; color: #fff; margin-bottom: 2px; }
+    .winner-dept { color: var(--gold); font-size: 14px; font-weight: 700; text-transform: uppercase; margin-bottom: 5px; }
+    .winner-id { display: inline-block; background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px; font-size: 11px; color: #aaa; font-family: monospace;}
+    
+    .prize-tag { 
+        position: absolute; top: 0; right: 0; 
+        background: var(--gold-dark); color: #000; 
+        font-size: 10px; font-weight: bold; padding: 2px 8px; 
+        border-bottom-left-radius: 8px;
+    }
+
+    /* Loading / Empty States */
+    .state-msg { text-align: center; padding: 50px; color: #666; font-style: italic; width: 100%; grid-column: 1 / -1; }
+    .loading-spinner {
+       border: 3px solid rgba(255,215,0,0.2); border-left-color: var(--gold);
+       border-radius: 50%; width: 30px; height: 30px; animation: spin 0.8s linear infinite; margin: 0 auto 10px;
+    }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  </style>
+</head>
+<body>
+
+  <div class="header-fixed">
+      <h2>DANH SÁCH TRÚNG THƯỞNG</h2>
+      <button class="refresh-btn" onclick="loadData()">Cập nhật</button>
+  </div>
+
+  <div class="tabs-container" id="tabsBar">
+      <div style="color:#666; font-style:italic">Đang tải danh mục...</div>
+  </div>
+
+  <div class="content-area">
+      <div class="grid-container" id="gridResult">
+         </div>
+  </div>
+
+  <script>
+    let rawData = [];
+    let currentTab = 'ALL'; // Mặc định hiện tất cả
+
+    window.onload = loadData;
+
+    function loadData() {
+      // Show loading
+      document.getElementById('gridResult').innerHTML = `
+          <div class="state-msg">
+             <div class="loading-spinner"></div>
+             Đang đồng bộ dữ liệu...
+          </div>`;
+          
+      google.script.run.withSuccessHandler(processData).getWinnersList();
+    }
+
+    function processData(data) {
+      // 1. Lọc bỏ người vắng mặt
+      rawData = data.filter(r => r[3] !== "Vắng mặt");
+
+      if (rawData.length === 0) {
+        document.getElementById('tabsBar').innerHTML = '';
+        document.getElementById('gridResult').innerHTML = '<div class="state-msg">Chưa có dữ liệu trúng thưởng nào.</div>';
+        return;
+      }
+
+      // 2. Tạo danh sách Tabs (Các loại giải)
+      // data row structure: [Time, ID, Name, PrizeName, PrizeContent, PrizeOrder, Dept, Img]
+      renderTabs();
+
+      // 3. Render nội dung (mặc định tab đang chọn)
+      renderGrid();
+    }
+
+    function renderTabs() {
+        const tabsBar = document.getElementById('tabsBar');
+        tabsBar.innerHTML = '';
+
+        // Nhóm giải thưởng để đếm số lượng
+        let prizeCounts = {};
+        let prizeOrders = {}; // Lưu thứ tự sắp xếp của giải
+
+        rawData.forEach(row => {
+            let pName = row[3];
+            let pOrder = row[5];
+            if(!prizeCounts[pName]) {
+                prizeCounts[pName] = 0;
+                prizeOrders[pName] = pOrder;
+            }
+            prizeCounts[pName]++;
+        });
+
+        // Sắp xếp danh sách Tab theo PrizeOrder
+        let sortedPrizes = Object.keys(prizeCounts).sort((a,b) => prizeOrders[a] - prizeOrders[b]);
+
+        // 1. Tab "TẤT CẢ"
+        let btnAll = document.createElement('div');
+        btnAll.className = `tab-btn ${currentTab === 'ALL' ? 'active' : ''}`;
+        btnAll.innerHTML = `TẤT CẢ <span class="tab-count">${rawData.length}</span>`;
+        btnAll.onclick = () => switchTab('ALL');
+        tabsBar.appendChild(btnAll);
+
+        // 2. Các Tab Giải con
+        sortedPrizes.forEach(pName => {
+            let btn = document.createElement('div');
+            btn.className = `tab-btn ${currentTab === pName ? 'active' : ''}`;
+            btn.innerHTML = `${pName} <span class="tab-count">${prizeCounts[pName]}</span>`;
+            btn.onclick = () => switchTab(pName);
+            tabsBar.appendChild(btn);
+        });
+    }
+
+    function switchTab(tabName) {
+        currentTab = tabName;
+        // Re-render tabs để update class active
+        renderTabs();
+        // Re-render grid
+        renderGrid();
+    }
+
+    function renderGrid() {
+        const grid = document.getElementById('gridResult');
+        grid.innerHTML = '';
+
+        // Lọc dữ liệu theo Tab hiện tại
+        let displayData = rawData;
+        if (currentTab !== 'ALL') {
+            displayData = rawData.filter(r => r[3] === currentTab);
+        }
+
+        // Sắp xếp dữ liệu hiển thị
+        // Nếu Tab ALL: Xếp theo PrizeOrder trước, Time sau
+        // Nếu Tab con: Xếp theo Time mới nhất lên đầu
+        displayData.sort((a, b) => {
+            if (currentTab === 'ALL') {
+                let orderDiff = Number(a[5]) - Number(b[5]);
+                if (orderDiff !== 0) return orderDiff;
+            }
+            // Time string compare (HH:mm:ss) - Đảo ngược để mới nhất lên đầu
+            if (a[0] < b[0]) return 1;
+            if (a[0] > b[0]) return -1;
+            return 0;
+        });
+
+        if(displayData.length === 0) {
+            grid.innerHTML = '<div class="state-msg">Không tìm thấy dữ liệu.</div>';
+            return;
+        }
+
+        // Render Cards
+        displayData.forEach((row, index) => {
+             // row: [Time, ID, Name, PrizeName, PrizeContent, PrizeOrder, Dept, Img]
+             let wName = row[2];
+             let wId = row[1];
+             let pName = row[3];
+             let dept = row[6] || "N/A"; // Cột index 6 là Dept
+             let imgId = row[7];         // Cột index 7 là Img
+
+             let card = document.createElement('div');
+             card.className = 'card';
+             card.style.animation = `fadeIn 0.3s ease forwards ${index * 0.05}s`;
+             
+             // Placeholder Image
+             let imgHtml = `<img class="emp-img" id="img-${index}" src="https://via.placeholder.com/100?text=${wId}">`;
+
+             card.innerHTML = `
+                 <div class="emp-img-wrapper">
+                    ${imgHtml}
+                 </div>
+                 <div class="card-info">
+                    <div class="winner-dept">${dept}</div>
+                    <div class="winner-name">${wName}</div>
+                    <div class="winner-id">MNV: ${wId}</div>
+                 </div>
+                 ${currentTab === 'ALL' ? `<div class="prize-tag">${pName}</div>` : ''}
+             `;
+
+             grid.appendChild(card);
+
+             // Lazy Load Image (Async)
+             if (imgId) {
+                 google.script.run.withSuccessHandler(function(res){
+                     if(res.status) {
+                         let imgEl = document.getElementById(`img-${index}`);
+                         if(imgEl) imgEl.src = `data:${res.mime};base64,${res.bytes}`;
+                     }
+                 }).getImageData(imgId);
+             }
+        });
+    }
+
+  </script>
+</body>
+</html>
