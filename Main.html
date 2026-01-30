@@ -14,27 +14,50 @@
     html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); background-image: radial-gradient(ellipse at top, #1a1a2e 0%, var(--bg) 80%); color: #eee; font-family: 'Montserrat', sans-serif; overflow: hidden; }
     .app-container { display: flex; flex-direction: column; width: 100vw; height: 100vh; }
     
-    /* HEADER */
-    .header { height: 70px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; border-bottom: 2px solid var(--gold-dark); background: rgba(0,0,0,0.6); z-index: 10; }
+    /* HEADER - ĐÃ SỬA ĐỂ CANH GIỮA TUYỆT ĐỐI */
+    .header { 
+        height: 70px; 
+        flex-shrink: 0; 
+        display: flex; 
+        align-items: center; 
+        justify-content: space-between; 
+        padding: 0 20px; 
+        border-bottom: 2px solid var(--gold-dark); 
+        background: rgba(0,0,0,0.6); 
+        z-index: 10; 
+        position: relative; /* Thêm dòng này để làm mốc cho Title */
+    }
     
-    /* --- SỬA LOGO: Dạng viên thuốc để chứa chữ dài --- */
     .logo { 
-        height: 40px; /* Chiều cao cố định */
-        width: auto;  /* Chiều rộng tự động theo chữ */
-        padding: 0 20px; /* Khoảng cách 2 bên chữ */
+        height: 40px; 
+        width: auto; 
+        padding: 0 20px; 
         background: linear-gradient(45deg, var(--gold), var(--gold-dark)); 
-        border-radius: 20px; /* Bo tròn dạng viên thuốc */
+        border-radius: 20px; 
         display: flex; 
         justify-content: center; 
         align-items: center; 
         font-weight: 900; 
         color: #000; 
         box-shadow: 0 0 10px var(--gold-dark);
-        white-space: nowrap; /* QUAN TRỌNG: Không cho xuống dòng */
-        font-size: 16px; /* Cỡ chữ vừa phải */
+        white-space: nowrap; 
+        font-size: 16px; 
     }
 
-    .title { font-weight: 900; color: var(--gold); font-size: 24px; text-transform: uppercase; letter-spacing: 2px; text-align: center; }
+    /* TITLE - ĐÃ SỬA: Dùng Absolute để nằm giữa bất chấp logo dài ngắn */
+    .title { 
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        font-weight: 900; 
+        color: var(--gold); 
+        font-size: 24px; 
+        text-transform: uppercase; 
+        letter-spacing: 2px; 
+        text-align: center;
+        white-space: nowrap;
+        pointer-events: none; /* Để không che mất nút bấm nếu màn hình quá nhỏ */
+    }
     
     .grid-wrapper { flex-grow: 1; width: 100%; padding: 10px; display: flex; justify-content: center; align-items: center; overflow: hidden; position: relative; }
     .grid-container { display: grid; grid-template-columns: repeat(var(--cols), var(--dynamic-w)); grid-template-rows: repeat(var(--rows), var(--dynamic-h)); gap: 3px; }
@@ -79,7 +102,80 @@
     .btn-reroll { background: #444; color: #ccc; border: 2px solid #666; }
     .btn-reroll:hover { background: #555; color: #fff; }
     .alert-box { background: #333; color: #fff; padding: 40px; border-radius: 10px; border: 2px solid red; text-align: center; font-size: 24px; font-weight: bold; box-shadow: 0 0 30px red; }
-  </style>
+    .batch-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    /* Mờ nhẹ 20% thôi để nhìn thấy background đang quay bên dưới */
+    background: rgba(0, 0, 0, 0.2); 
+    z-index: 150;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center; /* Hoặc flex-end nếu muốn dồn xuống dưới */
+    padding: 20px;
+}
+
+.batch-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr); /* 5 người 1 hàng */
+    gap: 15px;
+    width: 90%;
+    max-height: 70vh;
+    overflow-y: auto;
+    margin-bottom: 20px;
+}
+
+.batch-card {
+    background: #fff; /* Nền trắng đục 100% */
+    border: 3px solid var(--gold); /* Viền vàng dày hơn */
+    border-radius: 12px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    animation: popIn 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55); /* Hiệu ứng nảy mạnh hơn */
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8); /* Bóng đổ đậm để tách nền */
+    min-width: 140px;
+}
+
+@keyframes popIn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+.batch-card.removed { transform: scale(0); opacity: 0; transition: 0.3s; }
+
+.b-img { width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--gold); object-fit: cover; background: #ccc; margin-bottom: 5px; }
+.b-name { font-weight: 900; font-size: 14px; text-align: center; color: #000; line-height: 1.2; height: 34px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;}
+.b-id { font-size: 12px; color: #555; margin-bottom: 5px; font-weight: bold;}
+.b-dept { font-size: 10px; color: #777; margin-bottom: 8px; text-transform: uppercase;}
+
+.b-actions { display: flex; gap: 5px; width: 100%; }
+.b-btn { flex: 1; border: none; padding: 5px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px; transition: 0.2s; }
+.b-btn-ok { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+.b-btn-ok:hover { background: #c3e6cb; }
+.b-btn-no { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+.b-btn-no:hover { background: #f5c6cb; }
+
+.batch-controls { display: flex; gap: 20px; z-index: 160; }
+.btn-batch-main { 
+    padding: 12px 30px; font-size: 18px; font-weight: 900; 
+    border-radius: 50px; border: none; cursor: pointer; text-transform: uppercase;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5); transition: 0.2s;
+}
+.btn-save-all { background: linear-gradient(45deg, var(--gold), var(--gold-dark)); color: #000; }
+.btn-save-all:hover { transform: scale(1.05); box-shadow: 0 0 30px var(--gold); }
+.btn-respin { background: #dc3545; color: white; display: none; } /* Mặc định ẩn */
+.btn-respin:hover { background: #c82333; }
+
+</style>
+
+<div id="batchModal" class="batch-overlay">
+    <h2 style="color:var(--gold); text-transform: uppercase; margin-bottom: 20px; text-shadow: 0 2px 4px #000;" id="batchTitle">DANH SÁCH TRÚNG GIẢI</h2>
+    <div class="batch-grid" id="batchGrid">
+        </div>
+    <div class="batch-controls">
+        <button class="btn-batch-main btn-respin" id="btnRespin" onclick="respinBatch()">QUAY BÙ (<span id="respinCount">0</span>)</button>
+        <button class="btn-batch-main btn-save-all" onclick="confirmBatchAll()">XÁC NHẬN TẤT CẢ</button>
+    </div>
+</div>
 </head>
 <body>
 
@@ -148,6 +244,11 @@
   let stopConfetti = false;
   let cachedPrizeImg = null;
   let preloadedWinnerImg = null; 
+
+  // BIẾN CHO BATCH MODE
+  let batchWinners = []; 
+  let rejectedCount = 0; 
+  let batchIntervalBg = null;
 
   window.onload = function() {
     initApp();
@@ -258,11 +359,23 @@
             document.getElementById('alertModal').style.display = 'flex';
             google.script.run.ackSpin(); return; 
         }
-        isSpinning = true; google.script.run.ackSpin(); startAnimation();
+        
+        isSpinning = true; 
+        google.script.run.ackSpin(); 
+
+        // KIỂM TRA CHẾ ĐỘ: NẾU LÀ BATCH (QUAY NHIỀU) THÌ GỌI HÀM KHÁC
+        if (currentPrize.isBatch) {
+            startBatchAnimation();
+        } else {
+            startAnimation(); // Quay lẻ bình thường
+        }
       }
     }).checkStatus();
   }
 
+  // ==========================================
+  // PHẦN 1: LOGIC QUAY ĐƠN (NORMAL MODE)
+  // ==========================================
   function preloadWinnerImage(emp) {
       preloadedWinnerImg = null; 
       if (!emp[3]) return; 
@@ -274,24 +387,18 @@
   }
 
   function startAnimation() {
-    // 1. CHỐT NGƯỜI TRÚNG
     let winnerIdx = Math.floor(Math.random() * employees.length);
     preloadWinnerImage(employees[winnerIdx]);
 
-    // 2. CẤU HÌNH THỜI GIAN
     let speed = 50; 
     let runTime = (currentPrize.duration || 5) * 1000; 
     
-    // Các bước giảm tốc
     let stopSteps = [100, 150, 250, 400, 600, 1000]; 
     
-    // 3. TÍNH TOÁN
     let fastSteps = Math.floor(runTime / speed); 
     let totalSteps = fastSteps + stopSteps.length;
 
-    // Fix lệch 1 người
     let startIdx = ((winnerIdx - totalSteps + 1) % employees.length + employees.length) % employees.length;
-
     let currentIdx = startIdx;
     
     cells.forEach(c => c.classList.remove('active'));
@@ -330,7 +437,6 @@
             }
         }
     }
-    
     setTimeout(step, speed);
   }
 
@@ -392,22 +498,11 @@
 
     if (typeof confetti !== 'undefined') {
         stopConfetti = false; 
-        
-        // Z-Index: Pháo hoa (210) < Card (300)
         let confettiZ = 210;
-
         (function frame() {
             if (stopConfetti) return;
-            confetti({ 
-                particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, 
-                colors: ['#FFD700', '#FFF'],
-                zIndex: confettiZ 
-            });
-            confetti({ 
-                particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, 
-                colors: ['#FFD700', '#FFF'],
-                zIndex: confettiZ 
-            });
+            confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#FFD700', '#FFF'], zIndex: confettiZ });
+            confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#FFD700', '#FFF'], zIndex: confettiZ });
             requestAnimationFrame(frame);
         }());
     }
@@ -417,17 +512,31 @@
       if (pendingWinnerIndex === null) return;
       let emp = employees[pendingWinnerIndex];
 
+      // 1. Gửi lệnh lưu về Server (Chạy ngầm)
       google.script.run.saveWinner({
         id: emp[0], name: emp[1], 
         prizeName: currentPrize.name, prizeContent: currentPrize.content
       });
 
+      // 2. CẬP NHẬT GIAO DIỆN NGAY LẬP TỨC (Không chờ Server)
       if (currentPrize) {
+          // Trừ số lượng ở biến đang nắm giữ
           currentPrize.remain = currentPrize.remain - 1;
+          
+          // Cập nhật vào mảng gốc 'prizes' để hàm render hiển thị đúng
+          let pIdx = prizes.findIndex(p => p.name === currentPrize.name);
+          if (pIdx !== -1) {
+              prizes[pIdx].remain = currentPrize.remain;
+          }
       }
       
+      // Vẽ lại thanh giải thưởng ngay lập tức (Số lượng sẽ nhảy về 0/5 ngay)
+      renderPrizeBar(prizes);
+
+      // 3. Xóa nhân viên khỏi danh sách quay
       employees.splice(pendingWinnerIndex, 1);
       
+      // 4. Vẫn gọi hàm đồng bộ lại từ server để chắc chắn (Backup)
       google.script.run.withSuccessHandler(renderPrizeBar).getPrizesWithStats();
       
       closeModal();
@@ -457,6 +566,262 @@
         document.querySelectorAll('.prize-btn').forEach(b => b.classList.remove('active'));
     }
     isSpinning = false;
+  }
+
+  // ==========================================
+  // PHẦN 2: LOGIC QUAY HÀNG LOẠT (BATCH MODE)
+  // ==========================================
+
+  function startBatchAnimation() {
+      // 1. Reset giao diện
+      batchWinners = [];
+      rejectedCount = 0;
+      document.getElementById('batchGrid').innerHTML = '';
+      document.getElementById('btnRespin').style.display = 'none';
+      document.getElementById('batchModal').style.display = 'flex';
+      
+      // 2. Tính số lượng cần quay
+      let qtyToSpin = Math.min(currentPrize.remain, employees.length);
+      
+      // 3. Hiệu ứng nền
+      if (batchIntervalBg) clearInterval(batchIntervalBg);
+      batchIntervalBg = setInterval(() => {
+           let rIdx = Math.floor(Math.random() * employees.length);
+           cells.forEach(c => c.classList.remove('active'));
+           if(cells[rIdx]) cells[rIdx].classList.add('active');
+      }, 50);
+
+      try { SoundManager.playBg(); } catch(e){}
+
+      // 4. Chạy chu trình quay
+      runBatchSequence(qtyToSpin);
+  }
+
+  let batchNextImgBase64 = null; 
+
+  function runBatchSequence(qty) {
+      if (qty <= 0) {
+          stopBatchBackground();
+          return;
+      }
+
+      let count = 0;
+      let stepDuration = (currentPrize.duration || 3) * 1000; 
+
+      // Hàm đệ quy
+      function nextStep() {
+          if (count >= qty || employees.length === 0) {
+              try { SoundManager.stopBg(); } catch(e){}
+              return;
+          }
+
+          // --- LOGIC PRELOAD (TẢI TRƯỚC) ---
+          // 1. Chọn trước người sẽ trúng ở lượt này
+          // Lưu ý: Ta chọn nhưng chưa hiện, chỉ để lấy ID tải ảnh
+          let availableEmps = employees.filter(e => !batchWinners.some(bw => bw[0] === e[0]));
+          if (availableEmps.length === 0) {
+               stopBatchBackground(); return;
+          }
+          let winIdx = Math.floor(Math.random() * availableEmps.length);
+          let nextWinner = availableEmps[winIdx];
+          
+          // 2. Reset và Gọi tải ảnh ngay lập tức
+          batchNextImgBase64 = null; 
+          if (nextWinner[3]) { // Nếu có ID ảnh
+              google.script.run.withSuccessHandler(function(res){
+                  if(res.status) {
+                      batchNextImgBase64 = "data:" + res.mime + ";base64," + res.bytes;
+                  }
+              }).getImageData(nextWinner[3]);
+          }
+
+          // --- BẮT ĐẦU CHỜ (Trong lúc này ảnh đang được tải ngầm) ---
+          setTimeout(() => {
+              // Hết giờ chờ: Thực hiện hiển thị
+              
+              // Đẩy người vừa chọn vào danh sách hiển thị
+              batchWinners.push(nextWinner);
+              
+              // Gọi hàm hiện thẻ - TRUYỀN KÈM ẢNH ĐÃ TẢI
+              addBatchCard(nextWinner, batchNextImgBase64); 
+              
+              // Hiệu ứng âm thanh & Highlight
+              try { SoundManager.tick(); } catch(e){}
+              
+              let realIndex = employees.findIndex(e => e[0] === nextWinner[0]);
+              if (realIndex !== -1 && cells[realIndex]) {
+                  cells.forEach(c => c.classList.remove('active'));
+                  cells[realIndex].classList.add('active');
+              }
+
+              count++;
+              nextStep(); // Lặp lại quy trình
+
+          }, stepDuration);
+      }
+
+      // Bắt đầu chuỗi
+      nextStep();
+  }
+
+  // --- HÀM TẠO THẺ CARD (QUAN TRỌNG: Cần có hàm này mới hiện popup) ---
+  function addBatchCard(emp, preloadedImg) {
+      let grid = document.getElementById('batchGrid');
+      let div = document.createElement('div');
+      div.className = 'batch-card';
+      div.id = 'b-card-' + emp[0];
+      
+      // Mặc định là placeholder
+      let imgSrc = "https://via.placeholder.com/80?text=" + emp[0];
+      
+      // Nếu đã có ảnh tải trước -> Dùng luôn (Hiện tức thì)
+      if (preloadedImg) {
+          imgSrc = preloadedImg;
+      }
+
+      div.innerHTML = `
+          <img class="b-img" id="b-img-${emp[0]}" src="${imgSrc}">
+          <div class="b-name">${emp[1]}</div>
+          <div class="b-id">${emp[0]}</div>
+          <div class="b-dept">${emp[2]}</div>
+          <div class="b-actions">
+              <button class="b-btn b-btn-no" onclick="rejectBatch('${emp[0]}')">✗ Vắng</button>
+              <button class="b-btn b-btn-ok" onclick="approveBatch(this)">✓ Nhận</button>
+          </div>
+      `;
+      grid.appendChild(div);
+
+      // Fallback: Nếu chưa có ảnh preload (do mạng quá lag tải > 5s) VÀ nhân viên có ID ảnh
+      // Thì mới gọi tải lại lần nữa để bù vào
+      if (!preloadedImg && emp[3]) {
+          google.script.run.withSuccessHandler(function(res){
+              if(res.status) {
+                  let imgEl = document.getElementById(`b-img-${emp[0]}`);
+                  if(imgEl) imgEl.src = "data:" + res.mime + ";base64," + res.bytes;
+              }
+          }).getImageData(emp[3]);
+      }
+  }
+
+  function rejectBatch(empId) {
+      let emp = batchWinners.find(e => e[0] === empId);
+      if (emp) {
+          google.script.run.saveWinner({
+             id: emp[0], name: emp[1], 
+             prizeName: "Vắng mặt", prizeContent: "Bỏ qua (Batch)"
+          });
+          
+          let globalIdx = employees.findIndex(e => e[0] === empId);
+          if (globalIdx !== -1) employees.splice(globalIdx, 1);
+          
+          batchWinners = batchWinners.filter(e => e[0] !== empId);
+      }
+
+      let card = document.getElementById('b-card-' + empId);
+      if (card) {
+          card.classList.add('removed');
+          setTimeout(() => card.remove(), 300);
+      }
+
+      rejectedCount++;
+      updateRespinButton();
+      calculateLayout(); renderGridCells();
+  }
+
+  function approveBatch(btn) {
+      let card = btn.parentElement.parentElement;
+      card.style.background = "#d4edda";
+      card.style.borderColor = "#28a745";
+      btn.innerHTML = "ĐÃ CHỌN";
+      btn.disabled = true;
+      btn.previousElementSibling.style.display = 'none'; 
+  }
+
+  function updateRespinButton() {
+      let btn = document.getElementById('btnRespin');
+      let countSpan = document.getElementById('respinCount');
+      if (rejectedCount > 0) {
+          btn.style.display = 'block';
+          countSpan.textContent = rejectedCount;
+      } else {
+          btn.style.display = 'none';
+      }
+  }
+
+  function stopBatchBackground() {
+      if (batchIntervalBg) clearInterval(batchIntervalBg);
+      batchIntervalBg = null;
+      cells.forEach(c => c.classList.remove('active'));
+      try { SoundManager.stopBg(); } catch(e){}
+  }
+
+  // --- HÀM XÁC NHẬN TẤT CẢ (ĐÃ FIX LỖI GỬI NHIỀU LỆNH) ---
+  function confirmBatchAll() {
+      if (batchWinners.length === 0) {
+          closeBatchModal();
+          return;
+      }
+
+      let dataToSend = batchWinners.map(emp => ({
+          id: emp[0], 
+          name: emp[1], 
+          prizeName: currentPrize.name, 
+          prizeContent: currentPrize.content
+      }));
+
+      let btn = document.querySelector('.btn-save-all');
+      let oldText = btn.innerText;
+      btn.innerText = "ĐANG LƯU...";
+      btn.disabled = true;
+
+      google.script.run.withSuccessHandler(function(updatedPrizes) {
+          renderPrizeBar(updatedPrizes);
+          
+          batchWinners.forEach(w => {
+              let globalIdx = employees.findIndex(e => e[0] === w[0]);
+              if (globalIdx !== -1) employees.splice(globalIdx, 1);
+          });
+
+          calculateLayout(); 
+          renderGridCells();
+          closeBatchModal();
+          stopBatchBackground();
+
+          btn.innerText = oldText;
+          btn.disabled = false;
+
+      }).saveBatchWinners(dataToSend);
+  }
+
+  function respinBatch() {
+      if (rejectedCount <= 0) return;
+      
+      let qty = rejectedCount;
+      rejectedCount = 0; 
+      updateRespinButton();
+      
+      try { SoundManager.playBg(); } catch(e){}
+      
+      if (!batchIntervalBg) {
+          batchIntervalBg = setInterval(() => {
+              let rIdx = Math.floor(Math.random() * employees.length);
+              cells.forEach(c => c.classList.remove('active'));
+              if(cells[rIdx]) cells[rIdx].classList.add('active');
+          }, 50);
+      }
+
+      runBatchSequence(qty);
+  }
+
+  function closeBatchModal() {
+      document.getElementById('batchModal').style.display = 'none';
+      isSpinning = false;
+      batchWinners = [];
+      
+      if (currentPrize && currentPrize.remain <= 0) {
+          currentPrize = null;
+          document.querySelectorAll('.prize-btn').forEach(b => b.classList.remove('active'));
+      }
   }
 </script>
 </body>
