@@ -21,7 +21,7 @@ function getPrizesWithStats() {
   if (!sheetPrizes || sheetPrizes.getLastRow() < 2) return [];
   
   // Lấy 6 cột: Tên(A), Nội dung(B), SL(C), Ảnh(D), Thứ tự(E), Thời gian(F)
-  var prizes = sheetPrizes.getRange(2, 1, sheetPrizes.getLastRow()-1, 6).getValues();
+  var prizes = sheetPrizes.getRange(2, 1, sheetPrizes.getLastRow()-1, 7).getValues();
   
   var winners = [];
   if (sheetWinners && sheetWinners.getLastRow() >= 2) {
@@ -46,7 +46,8 @@ function getPrizesWithStats() {
       total: totalQty,
       remain: remainQty,
       img: p[3],
-      duration: Number(durationSec)
+      duration: Number(durationSec),
+      isBatch: p[6] === true || p[6] === "TRUE"
     };
   });
 }
@@ -156,4 +157,25 @@ function getImageData(id) {
 }
 function include(filename) {
   return HtmlService.createTemplateFromFile(filename).evaluate().getContent();
+}
+// THÊM VÀO CUỐI FILE Code.gs
+
+// Hàm lưu 1 danh sách người trúng giải cùng lúc (Batch Save)
+function saveBatchWinners(winnersList) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName("Winners");
+  var time = new Date();
+  
+  // Chuẩn bị dữ liệu để ghi 1 lần (nhanh hơn ghi từng dòng)
+  var rows = winnersList.map(function(w) {
+     return [time, w.id, w.name, w.prizeName, w.prizeContent];
+  });
+  
+  if (rows.length > 0) {
+    // Ghi xuống sheet
+    sheet.getRange(sheet.getLastRow() + 1, 1, rows.length, 5).setValues(rows);
+  }
+  
+  // Trả về danh sách giải thưởng mới nhất để cập nhật giao diện ngay lập tức
+  return getPrizesWithStats();
 }
